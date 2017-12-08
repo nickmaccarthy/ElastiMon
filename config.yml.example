@@ -1,0 +1,11 @@
+poll_interval: 5
+manage_index_template: true
+es_clusters:
+  - name: MyCoolCluster
+    elasticsearch:
+      hosts: http://elasticsearch.company.com:900
+      args:
+        http_auth: [ 'username', 'p@ssw0rd!' ]
+    tags:
+      - production
+     
