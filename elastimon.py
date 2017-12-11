@@ -21,8 +21,6 @@ logger = logging.getLogger(__name__)
 
 SHOME = os.path.abspath(os.path.join(os.path.dirname(__file__)))
 
-_TARGET_INDEX = 'elastimon-{}'.format(arrow.utcnow().format('YYYY-MM-DD'))
-
 def load_config(path=os.path.join(SHOME, 'config.yml')):
     with open(path, 'r') as f:
         try:
@@ -41,6 +39,10 @@ def find_in_clusters(name):
 def get_timestamp():
     return arrow.utcnow().format('YYYY-MM-DDTHH:mm:ssZ')
 
+def build_index(basename='elastimon', format='YYYY.MM.DD'):
+    ''' by default will return elastimon-YYYY.MM.DD, i.e. elastimon-2017.10.20 '''
+    return '{basename}-{format}'.format(basename=basename, format=arrow.utcnow().format('YYYY.MM.DD'))
+
 def es_index(client, actions):
     try:
         bulk_index = es_helpers.bulk(client, actions)
@@ -48,12 +50,10 @@ def es_index(client, actions):
     except Exception as e:
         logger.exception('Unable to bulk index items, reason: {}'.format(e))
 
-def bulk_format_document(document, doc_type, index=_TARGET_INDEX, tags=[]):
+def bulk_format_document(document, doc_type, tags=[]):
     retd = {
-            #'_op_type': 'index',
-            #'_id': str(uuid.uuid4()),
             '_type': doc_type, 
-            '_index': index, 
+            '_index': build_index(), 
             '_source': document
         }
 
@@ -223,12 +223,10 @@ def timeSeriesIndexStats():
             es_index(es, bulk_stats)
         
         logger.info("timeSeriesIndexStats Thread ended...")
-                
-
         
 if __name__ == '__main__':
     schedule.every(10).seconds.do(clusterStats)
-    schedule.every(10).minutes.do(timeSeriesIndexStats)
+    schedule.every(30).minutes.do(timeSeriesIndexStats)
        
     while True:
         schedule.run_pending()
