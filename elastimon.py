@@ -10,9 +10,6 @@ import logging
 import json
 import uuid
 import schedule
-from collections import defaultdict
-from collections import Counter
-from collections import OrderedDict
 import re 
 import sqlite3
 
